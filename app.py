@@ -5,7 +5,7 @@ import pyttsx3
 import subprocess
 import logging
 
-from utils.txtutil import split_into_chapters, split_text_by_count, split_text_by_sentence
+from utils.txtutil import  split_text_by_count
 # 配置日志记录器（可选）
 logging.basicConfig(filename='app.log', level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')

@@ -1,4 +1,5 @@
 '''文本处理工具'''
+import math
 import re
 def split_text_by_length(text, max_len):
     return [text[i: i + max_len] for i in range(0, len(text), max_len)]
@@ -19,11 +20,12 @@ def split_text_by_count(text, count):
     '''给定分割数量进行分割'''
     sentences = re.split(r'(?<=[。！？，])', text) 
     result = []
-    n = len(sentences) // count
-    if n == 0:
-        n = 1
-    for i in range(0, len(sentences), n):
-        result.append(''.join(sentences[i: i + n]))
+    # n = len(sentences) // count
+    words_num = math.ceil(len(sentences) / count)
+    if words_num == 0:
+        words_num = 1
+    for i in range(0, len(sentences), words_num):
+        result.append(''.join(sentences[i: i + words_num]))
 
     return result
 
