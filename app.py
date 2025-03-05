@@ -1,3 +1,4 @@
+from ast import arg
 import os
 import sys
 from moviepy import AudioFileClip
@@ -411,8 +412,9 @@ if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Video Maker')
     parser.add_argument('--input', type=str, default='./input', help='image dir')
+    parser.add_argument('--output', type=str, default='./output', help='image dir')
     args = parser.parse_args()
     
-    maker = VideoMaker(args.input)
+    maker = VideoMaker(args.input, args.output)
     maker.run()
     
