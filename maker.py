@@ -10,15 +10,25 @@ from utils.txtutil import  split_text_by_count
 # 配置日志记录器（可选）
 logging.basicConfig(filename='app.log', level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+
 class VideoMaker:
     '''
     将文字转换为音频文件，并与图片合并为视频文件片断；进而合并为整个视频文件.
-    注：由于字幕内容需要在生成视频片断过程中生成，因此片断不清理的情况下不会再次生成。
+    注：由于字幕内容需要在生成视频片断过程中生成，因此视频片断不清理的情况下不会再次生成。
     verison: 1.0
     '''
-    def __init__(self, indir:str='input', outdir: str='output'):
+    def __init__(self, indir:str='input', outdir: str='output', outfilename:str=None):
+        """
+        Initialize the VideoMaker class.
+
+        Args:
+            indir (str, optional): Input directory containing images and text files. Defaults to 'input'.
+            outdir (str, optional): Output directory for generated media files. Defaults to 'output'.
+            outfilename (str, optional): Output file name for the final video. Defaults to the last part of the input directory.
+        """
         self.indir = indir
         self.outdir = outdir
+        self.outname = outfilename or self.indir.replace('\\','/').rstrip('/').split('/')[-1]
         os.makedirs(self.indir, exist_ok=True)
         os.makedirs(self.outdir, exist_ok=True)
         # 文件列表
@@ -30,7 +40,7 @@ class VideoMaker:
         self.srt_idx = 0 # 字幕索引
         self.srt_content = []
         self.srt_start= 0 # 下一句字幕起点时间
-        self.subtitle_file = os.path.join(self.outdir, 'output.srt')
+        self.subtitle_file = os.path.join(self.outdir, f'{self.outname}.srt')
         # 创建日志记录器实例
         self.logger = logging.getLogger(self.__class__.__name__)
 
@@ -191,7 +201,7 @@ class VideoMaker:
             None
         """
         # output1 = f'{os.path.basename(self.workdir)}_nomusic.mp4'
-        output1 = os.path.join(self.outdir, 'output_nomusic.mp4')
+        output1 = os.path.join(self.outdir, f'{self.outname}_nomusic.mp4')
         command = [
             'ffmpeg', '-f', 'concat', '-safe', '0', '-i', clip_list_file, '-c', 'copy', '-y', output1
             # 'ffmpeg', '-f', 'concat', '-safe', '0', '-i', clip_list_file, '-c', 'copy', '-map', '0:v', '-map', '0:a', '-map', '0:s', '-y', output1
@@ -202,7 +212,7 @@ class VideoMaker:
         # 添加背景音乐
         # ffmpeg -i 1.mp4 -stream_loop -1 -i background.mp3 -filter_complex "[0:a][1:a]amix=inputs=2:duration=first:dropout_transition=3[audio]" -map 0:v:0 -map "[audio]" -c:v copy -shortest -y 1-mu.mp4
         subtitle_file = self.subtitle_file.replace(os.sep,"/") # 替换路径分隔符为'/'
-        output2 = os.path.join(self.outdir, 'output_music.mp4')
+        output2 = os.path.join(self.outdir, f'{self.outname}_music.mp4')
         # -vf "subtitles=sub.srt" 
         command = [
             'ffmpeg', '-i', output1, '-stream_loop', '-1','-i', 'background.mp3', '-filter_complex', '[0:a][1:a]amix=inputs=2:duration=first:dropout_transition=3[audio]', '-map', '0:v:0', '-map', '[audio]','-c:v', 'copy', '-c:a', 'aac', '-shortest', '-y', output2
@@ -223,7 +233,7 @@ class VideoMaker:
             # mp4: 播放时不能默认打开字幕，需要手动打开
             # 'ffmpeg', '-i', output2, '-i', subtitle_file,'-c:v', 'copy', '-c:a', 'copy', '-c:s', 'mov_text', '-metadata:s:s:0', 'title="default"', '-disposition:s:0', 'default', '-y', f'{self.outdir}/output_subtitles.mp4'
             # mkv: 播放时默认打开字幕
-            'ffmpeg', '-i', output2, '-i', subtitle_file,'-c:v', 'copy', '-c:a', 'copy', '-c:s', 'srt', '-metadata:s:s:0', 'title="default"', '-disposition:s:0', 'default', '-y', f'{self.outdir}/output_subtitles.mkv'
+            'ffmpeg', '-i', output2, '-i', subtitle_file,'-c:v', 'copy', '-c:a', 'copy', '-c:s', 'srt', '-metadata:s:s:0', 'title="default"', '-disposition:s:0', 'default', '-y', f'{self.outdir}/{self.outname}_subtitles.mkv'
             # 硬字幕：视频重新编码，无法关闭字幕
             # 'ffmpeg', '-i', output2, '-vf', f'subtitles={subtitle_file}','-c:v', 'copy', '-c:a', 'copy', '-y', output3
         ]
@@ -337,7 +347,7 @@ class VideoMaker:
                 return
             text_files = [f for f in os.listdir(self.indir) if f.endswith('.txt') and f != 'article.txt']
             if len(text_files) > 0:
-                self.logger.info('Some txt files exist.')
+                self.logger.info('Some txt files exist. you can delete them and recreate them.')
                 return
             
             # Check if .txt exists
@@ -352,7 +362,7 @@ class VideoMaker:
             #     return
             
         
-            self.logger.info("picture's txt files not exist, generate them.")
+            self.logger.info("picture's txt files not exist, generate them...")
 
             # Read the content of article.txt
             try:
@@ -415,6 +425,6 @@ if __name__ == '__main__':
     parser.add_argument('--output', type=str, default='./output', help='image dir')
     args = parser.parse_args()
     
-    maker = VideoMaker(args.input, args.output)
+    maker = VideoMaker(args.input, args.output, 'output')
     maker.run()
     
