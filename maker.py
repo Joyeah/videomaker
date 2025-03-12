@@ -421,8 +421,8 @@ def format_time(seconds):
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Video Maker')
-    parser.add_argument('--input', type=str, default='./input', help='image dir')
-    parser.add_argument('--output', type=str, default='./output', help='image dir')
+    parser.add_argument('-i', '--input', type=str, default='./input', help='image dir')
+    parser.add_argument('-o', '--output', type=str, default='./output', help='output dir')
     args = parser.parse_args()
     
     maker = VideoMaker(args.input, args.output, 'output')

@@ -6,8 +6,8 @@ from maker import VideoMaker
 if __name__ == '__main__':
     import argparse
     parser = argparse.ArgumentParser(description='Multiple Video Maker')
-    parser.add_argument('--root', type=str, default='./input', help='image root forlder ')
-    parser.add_argument('--output', type=str, default='./output', help='video output forlder')
+    parser.add_argument('-i', '--root', type=str, default='./input', help='image root forlder ')
+    parser.add_argument('-o', '--output', type=str, default='./output', help='video output forlder')
     args = parser.parse_args()
     
     # 遍历所有文本夹
